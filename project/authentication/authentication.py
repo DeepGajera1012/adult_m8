@@ -42,13 +42,7 @@ def register():
         username=data.get('username')
         email=data.get('email')
         phone=data.get('phone')
-        # social_id=data.get('social_id')
-        # login_type=data.get('login_type')
-        # dob=data.get('dob')
-        # password=data.get('password')
-        # address=data.get('address')
-        # latitude=data.get('latitude')
-        # longitude=data.get('longitude')
+
 
         if role not in ['escort' , 'client']:
             return jsonify({'error':'invalid role'}),400

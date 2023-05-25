@@ -8,7 +8,7 @@ client_bp = Blueprint('client', __name__)
 @jwt_required()
 def package():
     try:
-        cursor = g.db.cursor(dictionary=True)
+        cursor = g.db.cursor(dictionary=True) 
         cursor.execute('SELECT price,name,descripation,fetures FROM tbl_package WHERE is_active=1 AND is_delete=0')
         user =cursor.fetchall()
         return jsonify({"Premium":user}),200
