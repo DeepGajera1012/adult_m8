@@ -10,7 +10,7 @@ from datetime import datetime,timedelta
 
 authentication_bp = Blueprint('auth',__name__)
 
-app=Flask(__name__)
+
 
 
 
