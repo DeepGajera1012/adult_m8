@@ -3,7 +3,7 @@ import os
 import mysql.connector
 from flask_jwt_extended import JWTManager
 from datetime import datetime,timedelta
-from project.authentication import auth_bp
+from project.authentication import authentication_bp
 from project.admin import admin_bp
 from project.client import client_bp
 from project.escort import escort_bp
@@ -54,7 +54,7 @@ app.config['JWT_ACCESS_TOKEN_EXPIRES'] = timedelta(days=1)
 
 jwt = JWTManager(app)
 
-app.register_blueprint(auth_bp)
+app.register_blueprint(authentication_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(client_bp)
 app.register_blueprint(escort_bp)
