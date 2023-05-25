@@ -32,7 +32,6 @@ def send_email(users):
 
 @authentication_bp.post('/register')
 def register():
-    # print('come up to here')
     try:
         data=request.json
         role=data.get('role')
@@ -56,31 +55,19 @@ def register():
             return jsonify({'error':'please enter email'}),400
         if not phone:
             return jsonify({'error':'please enter phone number'}),400       
-        # if not profile_image:
-        #     return jsonify({'error':'profile_image required'}),400
-        # if not address:
-        #     return jsonify({'error':'address required'}),400
-        # if not latitude:
-        #     return jsonify({'error':'latitude required'}),400
-        # if not longitude:
-        #     return jsonify({'error':'longitude required'}),400
         
         
-        
-        # g.db.commit()
         cursor=g.db.cursor()
         cursor.execute(f"SELECT * from tbl_users where email='{email}'")
         users=cursor.fetchone()
         if not users:
             cursor=g.db.cursor(buffered=True)
-            # pwd_hash = generate_password_hash(password,method='sha256',salt_length=8)
             cursor.execute(f"INSERT INTO tbl_users(role,first_name,last_name,username,email,phone) VALUES('{role}','{first_name}','{last_name}','{username}','{email}','{phone}' )")
             g.db.commit()
             cursor=g.db.cursor()
             cursor.execute(f"SELECT * from tbl_users where email='{email}' ORDER BY email DESC")
             users=cursor.fetchone()
             a = send_email(users)
-            # return jsonify({'message':'done'})
             return jsonify({"msg":a}),200
         return jsonify({'message':'user already exist'}),400
 
@@ -175,17 +162,14 @@ def verifyotp(user_id):
 def reset_password(hash_email,users_id):
     try:
         cursor=g.db.cursor()
-        # import pdb;pdb.set_trace();
         cursor.execute(f"select * from tbl_users where id={users_id}")
         user=cursor.fetchone()
         if user:
-            # import pdb;pdb.set_trace();
             is_email=check_password_hash(hash_email,user[6])
             if is_email:
                 new_password=request.json.get('new_password')
                 if new_password:
                     hash_password=generate_password_hash(new_password,method='sha256',salt_length=8)
-                    # import pdb;pdb.set_trace();
                     cursor.execute(f"UPDATE `tbl_users` SET `password`='{hash_password}' where `id`={user[0]}")
                     g.db.commit()
                     return jsonify({"message":"password is updeted"}),200
@@ -194,7 +178,6 @@ def reset_password(hash_email,users_id):
         return jsonify({"error":"user not found"}),400
     except Exception as e:
         return jsonify({'error':str(e)}),400
-
 
     
 @authentication_bp.post('/forget_password')
@@ -225,21 +208,54 @@ def forget_password():
     return jsonify({"error": "Enter a valid email"}), 400
 
 
-@authentication_bp.post('/add_interest/<user_id>')
-def add_interest(user_id):
-    data=request.json
-    interest=data.get('interest')
+@authentication_bp.post('/add_interest/<users_id>')
+def add_interest(users_id):
+    data = request.json
+    interest = data.get('interest') 
     cursor = g.db.cursor()
-    cursor.execute(f"SELECT * FROM tbl_users WHERE id='{user_id}'")
+    cursor.execute(f"SELECT * FROM tbl_users WHERE id={users_id}")
     user = cursor.fetchone()
 
     if user:
-        cursor=g.db.cursor(buffered=True)
-        cursor.execute(f"INSERT INTO tbl_user_interests SET interest = '{interest}' WHERE id = {user_id};")
+        cursor = g.db.cursor(buffered=True)
+        for interest in interest:
+            cursor.execute(f"INSERT INTO tbl_user_interests (user_id, interest) VALUES ({users_id}, '{interest}')")
         g.db.commit()
 
-        return jsonify({'successfull':'interest added successfully'})
-    return jsonify({'error':'Wrong credentital'}),401  
+        return jsonify({'successful': 'Interests added successfully'})
+    return jsonify({'error': 'Wrong credential'}), 401 
         
+
+
+@authentication_bp.post('/change_password/<users_id>')
+def change_password(users_id):
+    try:
+        cursor = g.db.cursor()
+        cursor.execute(f"SELECT password FROM tbl_users WHERE id={users_id}")
+        user = cursor.fetchone()
+        print("asdrftghjkhuygtfdresdrfghbnjmkjnhbgvfcdxzsdxcfvgbhnm",user)
+
+
+        if user:
+            old_password = request.json.get('old_password')
+            new_password = request.json.get('new_password')
+            print(old_password)
+            print(new_password)
+            
+
+            if old_password and new_password:
+                if check_password_hash(user[0],old_password):
+                    hash_password = generate_password_hash(new_password, method='sha256', salt_length=8)
+                    cursor.execute(f"UPDATE tbl_users SET password='{hash_password}' WHERE id={users_id}")
+                    g.db.commit()
+                    return jsonify({"message": "Password updated successfully"}), 200
+                else:
+                    return jsonify({"error": "Incorrect old password"}), 400
+            else:
+                return jsonify({"error": "Please provide both old and new passwords"}), 400
+        else:
+            return jsonify({"error": "User not found"}), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 400
 
 
