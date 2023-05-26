@@ -1,8 +1,221 @@
 from flask import Blueprint, jsonify, request, g
-from flask_jwt_extended import jwt_required,get_jwt_identity,jwt_required
+from flask_jwt_extended import jwt_required,get_jwt_identity,create_access_token
+from werkzeug.utils import secure_filename
+
+
 
 
 client_bp = Blueprint('client', __name__)
+
+def is_client(user_id):
+    cur = g.db.cursor()
+    cur.execute(f"select role from tbl_users where id={user_id}")
+    user = cur.fetchone()
+    if user:
+        if user[0] == 'client':
+            return True
+        return False
+    
+def is_client_escort(user_id):
+    cur = g.db.cursor()
+    cur.execute(f"select role from tbl_users where id={user_id}")
+    user = cur.fetchone()
+    if user:
+        if user[0] == 'client' or user[0] == 'escort':
+            return True
+        return False
+
+
+@client_bp.get('/access_token/<user_id>')
+def access_token(user_id):
+    access=create_access_token(identity=user_id)
+    return jsonify({"token":access})
+
+@client_bp.post("/verify_user_profile")
+@jwt_required()
+def verify_user_profile():
+    user_id = get_jwt_identity()
+    if not is_client_escort(user_id):
+        return jsonify({"error":"unauthrized access"}),401
+    try:
+        data = request.files
+    except:
+        return jsonify({"error":"no data found"}),404
+    user_photo = data.get('user_photo')
+    id_proof = data.get('id_proof')
+    if not user_photo and not id_proof:
+        return jsonify({"error":"no data found"}),404
+    if not user_photo:
+        return jsonify({"error":"user photo required"}),404
+    if not id_proof:
+        return jsonify({"error":"id_proof required"}),404
+    user_photo_filename = secure_filename(user_photo.filename)
+    id_proof_filename = secure_filename(id_proof.filename)
+    user_id = get_jwt_identity()
+    cur = g.db.cursor()
+    cur.execute(f"insert into tbl_profile_verify (user_id,photo,id_proof) values ({user_id},'{user_photo_filename}','{id_proof_filename}')")
+    g.db.commit()
+    return jsonify({"message":"request send successfully"}),200
+
+@client_bp.post("/like_feed/<feed_id>")
+@jwt_required()
+def like_feed(feed_id):
+    user_id = get_jwt_identity()
+    if not is_client_escort(user_id):
+        return jsonify({"error":"unauthrized access"}),401
+    cur = g.db.cursor()
+    cur.execute(f"insert into tbl_feed_like (user_id,feed_id) values ({user_id},{feed_id})")
+    g.db.commit()
+    return jsonify({"message":"liked successfully"}),200
+
+@client_bp.delete("/dislike_feed/<feed_id>")
+@jwt_required()
+def dislike(feed_id):
+    user_id = get_jwt_identity()
+    if not is_client_escort(user_id):
+        return jsonify({"error":"unauthrized access"}),401
+    cur = g.db.cursor()
+    cur.execute(f"delete from tbl_feed_like where user_id={user_id} and feed_id={feed_id}")
+    g.db.commit()
+    return jsonify({"message":"disliked successfully"}),200
+
+@client_bp.post("/add_comment/<feed_id>")
+@jwt_required()
+def add_comment(feed_id):
+    user_id = get_jwt_identity()
+    if not is_client_escort(user_id):
+        return jsonify({"error":"unauthrized access"}),401
+    try:
+        comment = request.json.get("comment")
+    except:
+        return jsonify({"error":"no data found"}),404
+    if not comment:
+        return jsonify({"error":"comment required"}),404
+    cur = g.db.cursor()
+    cur.execute(f"insert into tbl_feed_comment (user_id,feed_id,comment) values ({user_id},{feed_id},'{comment}')")
+    g.db.commit()
+    return jsonify({"message":"comment added successfully"}),200
+
+
+@client_bp.get("/display_feed")
+@jwt_required()
+def display_feed():
+    user_id = get_jwt_identity()
+    if not is_client_escort(user_id):
+        return jsonify({"error":"unauthrized access"}),401
+    cur = g.db.cursor(dictionary=True)
+    cur.execute(f"select f.id,concat(u.first_name,' ',u.last_name) as escort_name, u.profile_image,f.caption,f.mood,f.location,f.like_count,f.comment_count,f.created_at from tbl_feed f join tbl_users u on f.escort_id = u.id order by f.created_at DESC")
+    feed_data=cur.fetchall()
+    cur.execute(f"select feed_id,media from tbl_feed_media")
+    feed_media = cur.fetchall()
+    
+    for i in feed_data:
+        media=[]
+        for j in feed_media:
+            if i['id'] == j['feed_id']:
+                media.append(j['media'])
+        i['media'] = media
+    return jsonify({"feed_data":feed_data})
+
+@client_bp.get("/display_comment/<feed_id>")
+@jwt_required()
+def display_comment(feed_id):
+    user_id = get_jwt_identity()
+    if not is_client_escort(user_id):
+        return jsonify({"error":"unauthrized access"}),401
+    cur = g.db.cursor(dictionary=True)
+    cur.execute(f"select concat(u.first_name,' ',u.last_name) as user_name,u.profile_image,fc.comment,fc.created_at from tbl_feed_comment fc join tbl_users u on fc.user_id = u.id where feed_id={feed_id} order by fc.created_at DESC")
+    feed_comment_data = cur.fetchall()
+    if not feed_comment_data:
+        return jsonify({"error":"invalied feed id"}),400
+    return jsonify({"feed_comment":feed_comment_data}),200
+    
+    
+    
+    
+
+
+@client_bp.get("/user_profile")
+@jwt_required()
+def user_profile():
+    user_id = get_jwt_identity()
+    
+    if not is_client(user_id):
+        return jsonify({"error":"unauthrized access"}),401
+    cur = g.db.cursor(dictionary=True)
+    cur.execute(f"select first_name,last_name,username,profile_image,my_coins,is_profile_verify from tbl_users where id = {user_id}")
+    data = cur.fetchone()
+    return jsonify({"user_profile_data":data}),200
+
+
+@client_bp.get("/purchased_videos")
+@jwt_required()
+def purchased_videos():
+    user_id = get_jwt_identity()
+    if not is_client(user_id):
+        return jsonify({"error":"unauthrized access"}),401
+    cur = g.db.cursor(dictionary=True)
+    cur.execute(f"select ev.video,u.first_name,u.last_name from tbl_client_video_purchased_video vp join tbl_escort_video ev on vp.video_id=ev.id join tbl_users u on ev.escort_id=u.id where vp.client_id={user_id}")
+    data = cur.fetchall()
+    return jsonify({"purchased_videos":data}),200
+
+
+@client_bp.get("/get_payments_detials")
+@jwt_required()
+def get_payments_detials():
+    user_id = get_jwt_identity()
+    if not is_client(user_id):
+        return jsonify({"error":"unauthrized access"}),401
+    cur = g.db.cursor(dictionary=True)
+    cur.execute(f"select id,card_holder,card_number from tbl_user_payment_method where user_id={user_id} and is_active=1 and is_delete=0")
+    data = cur.fetchall()
+    return jsonify({"card_detials":data}),200
+
+
+@client_bp.patch("/reomve_payment_method/<card_id>")
+@jwt_required()
+def reomve_payment_method(card_id):
+    user_id = get_jwt_identity()
+    if not is_client(user_id):
+        return jsonify({"error":"unauthrized access"}),401
+    cur = g.db.cursor(dictionary=True)
+    cur.execute(f"select id from tbl_user_payment_method where user_id={user_id} and id={card_id}")
+    card_data= cur.fetchone()
+    if card_data:
+        cur.execute(f"update tbl_user_payment_method set is_active=0,is_delete=1 where id={card_data['id']}")
+        g.db.commit()
+        return jsonify({"message":"card deleted successfully"}),200
+    return jsonify({"error":"invalid card id"}),400
+
+@client_bp.post("/add_payment_method")
+@jwt_required()
+def add_payment_method():
+    user_id = get_jwt_identity()
+    if not is_client(user_id):
+        return jsonify({"error":"unauthrized access"}),401
+    try:
+        data = request.json
+    except:
+        return jsonify({"error":"no json data found"}),404
+    card_holder = data.get("card_holder")
+    card_number = data.get("card_number")
+    exp_date = data.get("exp_date")
+    cvv = data.get("cvv")
+    if not card_holder or not card_number or not exp_date or not cvv:
+        return jsonify({"error":"no data found"}),404
+    if not card_number:
+        return jsonify({"error":"card number required"}),404
+    if not card_holder:
+        return jsonify({"error":"card holder name required"}),404
+    if not exp_date:
+        return jsonify({"error":"exp date required"}),404
+    if not cvv:
+        return jsonify({"error":"cvv required"}),404
+        
+    cur = g.db.cursor(dictionary=True)
+    cur.execute(f"insert into tbl_user_payment_method (user_id,card_holder,card_number,expire_date,cvv) values ({user_id},'{card_holder}','{card_number}','{exp_date}',{cvv})")
+    g.db.commit()
+    return jsonify({"message":"payment method added successfully"}),200
 
 #-------------------page.39------------------------------
 @client_bp.get('/package')
