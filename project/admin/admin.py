@@ -7,4 +7,13 @@ import os
 
 admin_bp = Blueprint('admin', __name__)
 
+print("dfbfbfbfbfvbfbvfgbfbfgbfgbfb")
+print("dfbfbfbfbfvbfbvfgbfbfgbfgbfb")
+print("dfbfbfbfbfvbfbvfgbfbfgbfgbfb")
+print("dfbfbfbfbfvbfbvfgbfbfgbfgbfb")
+print("dfbfbfbfbfvbfbvfgbfbfgbfgbfb")
+print("dfbfbfbfbfvbfbvfgbfbfgbfgbfb")
+print("dfbfbfbfbfvbfbvfgbfbfgbfgbfb")
+print("dfbfbfbfbfvbfbvfgbfbfgbfgbfb")
+print("dfbfbfbfbfvbfbvfgbfbfgbfgbfb")
 
