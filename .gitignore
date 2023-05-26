@@ -17,6 +17,8 @@ build/
 .idea/
 docs/_build/
 .vscode
+media/
+.media/
 
 # Coverage reports
 htmlcov/
