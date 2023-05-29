@@ -217,11 +217,21 @@ def add_payment_method():
     g.db.commit()
     return jsonify({"message":"payment method added successfully"}),200
 
+
+
+
+
+
+
 #-------------------page.39------------------------------
 @client_bp.get('/package')
 @jwt_required()
 def package():
     try:
+        user_id = get_jwt_identity()
+        if not is_client(user_id):
+            return jsonify({"error": "unauthorized access"}), 401
+
         cursor = g.db.cursor(dictionary=True) 
         cursor.execute('SELECT price,name,descripation,fetures FROM tbl_package WHERE is_active=1 AND is_delete=0')
         user =cursor.fetchall()
@@ -235,6 +245,10 @@ def package():
 @jwt_required()
 def package_single(id):
     try:
+        user_id = get_jwt_identity()
+        if not is_client(user_id):
+            return jsonify({"error": "unauthorized access"}), 401
+        
         cursor = g.db.cursor(dictionary=True)
         cursor.execute('SELECT price,name,descripation,fetures FROM tbl_package WHERE is_active=1 AND is_delete=0 AND id=%s', (id,))
         user =cursor.fetchall()
@@ -256,6 +270,10 @@ def package_single(id):
 @jwt_required()
 def escort_image():
     try:
+        user_id = get_jwt_identity()
+        if not is_client(user_id):
+            return jsonify({"error":"unauthrized access"}),401
+        
         cursor = g.db.cursor(dictionary=True)
         cursor.execute('SELECT tu.username,tei.image,tu.is_login FROM tbl_escort_image tei JOIN tbl_users tu ON tei.escort_id = tu.id WHERE tei.is_active=1 AND tei.like_count >= 50 AND tu.is_login=1')
         user =cursor.fetchall()
@@ -268,6 +286,10 @@ def escort_image():
 @jwt_required()
 def escort_image_data():
     try:
+        user_id = get_jwt_identity()
+        if not is_client(user_id):
+            return jsonify({"error": "unauthorized access"}), 401
+        
         cursor = g.db.cursor(dictionary=True)
         cursor.execute('SELECT tu.username,tei.image,tu.is_login FROM tbl_escort_image tei JOIN tbl_users tu ON tei.escort_id = tu.id WHERE tei.is_active=1 AND tei.like_count <= 50;')
         user =cursor.fetchall()
@@ -322,8 +344,12 @@ def escort_image_insert():
 def filter_by():
     try:
         u_id = get_jwt_identity()  
+     
+         
+        if not is_client(u_id):
+            return jsonify({"error":"unauthrized access"}),401
+        
         print(u_id)
-
         id = u_id
 
         cursor = g.db.cursor(dictionary=True)
@@ -357,6 +383,10 @@ def filter_by():
 @jwt_required()
 def age():
     try:
+        user_id = get_jwt_identity()
+        if not is_client(user_id):
+            return jsonify({"error":"unauthrized access"}),401
+        
         start_age  = request.json.get('start_age')
         end_age = request.json.get('end_age')
         cursor = g.db.cursor(dictionary=True)
@@ -382,6 +412,10 @@ def age():
 @jwt_required()
 def user_interest():
     try:
+        user_id = get_jwt_identity()
+        if not is_client(user_id):
+            return jsonify({"error":"unauthrized access"}),401
+        
         interest = request.json.get('interest')
 
         cursor = g.db.cursor(dictionary=True)
@@ -405,6 +439,10 @@ def user_interest():
 @jwt_required()
 def escort_gender():
     try:
+        user_id = get_jwt_identity()
+        if not is_client(user_id):
+            return jsonify({"error":"unauthrized access"}),401
+        
         gender  = request.json.get('gender')
 
         cursor = g.db.cursor(dictionary=True)
@@ -421,6 +459,10 @@ def escort_gender():
 @jwt_required()
 def escort_hair():
     try:
+        user_id = get_jwt_identity()
+        if not is_client(user_id):
+            return jsonify({"error":"unauthrized access"}),401
+        
         hair  = request.json.get('hair')
 
         cursor = g.db.cursor(dictionary=True)
@@ -437,6 +479,10 @@ def escort_hair():
 @jwt_required()
 def escort_build():
     try:
+        user_id = get_jwt_identity()
+        if not is_client(user_id):
+            return jsonify({"error":"unauthrized access"}),401
+        
         build  = request.json.get('build')
 
         cursor = g.db.cursor(dictionary=True)
@@ -454,7 +500,10 @@ def escort_build():
 @jwt_required()
 def near_by():
     try:
-        u_id = get_jwt_identity()  
+        u_id = get_jwt_identity() 
+        if not is_client(u_id):
+            return jsonify({"error":"unauthrized access"}),401
+         
         print(u_id)
 
         id = u_id
@@ -489,6 +538,7 @@ def near_by():
 def about_escort(id):
     try:
         u_id=get_jwt_identity()
+        
 
         c_id = u_id
 
@@ -538,7 +588,7 @@ def about_escort(id):
 def client_about(id):
     try:
         u_id=get_jwt_identity()
-
+        
         cursor = g.db.cursor()
 
         cursor.execute(f"SELECT latitude,longitude FROM tbl_users WHERE id='{u_id}'")
@@ -583,6 +633,8 @@ def client_about(id):
 def video_insert():
     try:
         u_id=get_jwt_identity()
+        if not is_client(u_id):
+            return jsonify({"error":"unauthrized access"}),401
 
         escort_id = u_id
 
@@ -628,6 +680,10 @@ def video_insert():
 @jwt_required()
 def video_listing():
       try:
+        user_id = get_jwt_identity()
+        if not is_client(user_id):
+            return jsonify({"error":"unauthrized access"}),401
+        
         cursor = g.db.cursor(dictionary=True)
         cursor.execute('SELECT video,titel,price FROM tbl_escort_video')
         user = cursor.fetchall()
@@ -658,6 +714,7 @@ def video_click(id):
 def online_met(escort_id):
     try:
         id = get_jwt_identity()
+        
         cursor = g.db.cursor()
 
         cursor.execute(f"SELECT * FROM tbl_users WHERE role='client' AND id = {id}")
@@ -944,6 +1001,10 @@ from datetime import timedelta
 @jwt_required()
 def met_requests():
     try:
+        id = get_jwt_identity()
+        if not is_client(id):
+            return jsonify({"error":"unauthrized access"}),401
+        
         cursor = g.db.cursor(dictionary=True)
 
         cursor.execute("""SELECT ei.image, tu.username, em.id, em.met_date,em.met_statuus, em.met_time, em.met_type
@@ -1068,6 +1129,11 @@ from datetime import timedelta
 @jwt_required()
 def met_upcoming():
     try:
+        u_id = get_jwt_identity()  
+
+        if not is_client(u_id):
+            return jsonify({"error":"unauthrized access"}),401
+        
         cursor = g.db.cursor(dictionary=True)
 
         cursor.execute("""SELECT ei.image, tu.username, em.id, em.met_date,em.met_statuus, em.met_time, em.met_type
@@ -1199,6 +1265,11 @@ from datetime import timedelta
 @jwt_required()
 def met_past():
     try:
+        u_id = get_jwt_identity() 
+        
+        if not is_client(u_id):
+            return jsonify({"error":"unauthrized access"}),401
+        
         cursor = g.db.cursor(dictionary=True)
 
         cursor.execute("""SELECT ei.image, tu.username, em.id, em.met_date,em.met_statuus, em.met_time, em.met_type
