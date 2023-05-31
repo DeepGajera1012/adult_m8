@@ -1,0 +1,16 @@
+body{
+    background: linear-gradient(to right, #ccffff 0%, #3399ff 100%);
+    /* background-repeat: no-repeat; */
+    background-size: cover;
+}
+p1,h6{
+    font-size: 1.3vw;
+}
+h1{
+    font-size: 2.5vw;
+}
+.con{
+    margin: 10px;
+    height: auto;
+    width: 50%;
+}

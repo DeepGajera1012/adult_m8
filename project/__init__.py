@@ -1,4 +1,4 @@
-from flask import Flask,g
+from flask import Flask,g,render_template
 import os
 import mysql.connector
 from flask_jwt_extended import JWTManager
@@ -11,7 +11,7 @@ from flask_mail import Mail, Message
 
 
 
-app=Flask(__name__)
+app=Flask(__name__, template_folder='templates')
 
 
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:''@localhost/task_26_4'

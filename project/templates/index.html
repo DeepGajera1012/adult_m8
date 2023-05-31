@@ -1,0 +1,113 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link href="{{url_for('static',filename='css/bootstrap.min.css')}}" rel="stylesheet">
+  <link href="{{url_for('static',filename='css/style.css')}}" rel="stylesheet">
+
+
+    <title>task_24_4</title>
+
+</head>
+
+<body>
+
+    <header class="container p-4">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="/index">Admin</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                    data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent"
+                    aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <!-- <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/index">About Us</a>
+                        </li> -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/display_escort">Escort</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/display_client">Client</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/display_videos">Video</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/display_images">Image</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/verification_user_list">User Verification Requets</a>
+                        </li>
+                        <!-- <li class="nav-item">
+                            <a class="nav-link" href="/post">My Post</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/contact">Contact Us</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/contact/data">All Records</a>
+                        </li> -->
+                        <li class="nav-item">
+                            <a class="nav-link" href="/logout">Logout</a>
+                        </li>
+                    </ul>
+                    <!-- <form class="d-flex" role="search">
+                        <input class="form-control me-2" type="search" placeholder="Search" aria-label="Search">
+                        <button class="btn btn-outline-dark" type="submit">Search</button>
+                    </form> -->
+                </div>
+            </div>
+        </nav>
+
+    </header>
+
+    <div class="container p-3 table-responsive"
+        style="background-color: rgb(255, 255, 255); height: auto; width: auto;  background-repeat: no-repeat; border-radius: 10px;">
+        {% block body %}
+        <div class="row">
+        <div class="col-4 " style="height: 20%; width: 30%; background-color: rgba(170, 170, 170, 0.589); color: black; padding: 20px; margin-left: 10px; font-size: 50px;"> <a href="/display_client" style="text-decoration: none; color: black;"> Client ({{data.client}}) </a></div>
+        <div class="col-4" style="height: 20%; width: 30%; background-color: rgba(170, 170, 170, 0.589); color: black; padding: 20px; margin-left: 10px; font-size: 50px;"><a href="/display_escort" style="text-decoration: none; color: black;">Escort ({{data.escort}})</a></div>
+        <div class="col-4" style="height: 20%; width: 30%; background-color: rgba(170, 170, 170, 0.589); color: black; padding: 20px; margin-left: 10px; font-size: 50px;"><a href="/display_videos" style="text-decoration: none; color: black;">Videos ({{data.video}})</a></div>
+        <div class="col-4 mt-3" style="height: 20%; width: 30%; background-color: rgba(170, 170, 170, 0.589); color: black; padding: 20px; margin-left: 10px; font-size: 50px;"><a href="/display_images" style="text-decoration: none; color: black;">Images ({{data.image}})</a></div>
+
+    </div>
+        <!-- <table class="table">
+            <thead>
+                <tr>
+                    <th>Sr no.</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Description</th>
+                    <th>Moblie no.</th>
+                    <th>Edit/Delete</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for i in data %}
+                <tr>
+                    <td>{{i.id}}</td>
+                    <td>{{i.name}}</td>
+                    <td>{{i.email}}</td>
+                    <td>{{i.description}}</td>
+                    <td>{{i.mobile}}</td>
+                    <th><button class="btn"> <a href="/edit_record/{{i.id}}">Edit</a></button>/ <button class="btn"> <a
+                                href="/delete_record/{{i.id}}">Delete</a> </button></th>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table> -->
+        {% endblock %}
+
+    </div>
+
+    <script src="{{url_for('static',filename='js/bootstrap.bundle.min.js')}}"></script>
+
+</body>
+
+</html>

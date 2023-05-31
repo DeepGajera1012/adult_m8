@@ -1,0 +1,29 @@
+{% extends 'index.html'%}
+
+{% block body %}
+
+<div class="row">
+    {% for i in data %}
+
+    <div class="col-md-3 col-sm-3 col-12 mt-3">
+        <div class="card" style="width: auto;">
+            <div class="" style="display: flex;">
+
+                <img class="card-img-top " src="http://127.0.0.1:8000/display_media/{{i.photo}}" alt="{{i.photo}}">
+                <img class="card-img-top " src="http://127.0.0.1:8000/display_media/{{i.id_proof}}" alt="{{i.id_proof}}">
+  
+            </div>
+             
+        
+            <div class="card-body">
+              <!-- <h5 class="card-title">{{i.username}}</h5> -->
+              <a href="/verify_user/{{i.user_id}}" class="btn btn-primary">Approve</a>
+              <a href="/decline_request/{{i.user_id}}" class="btn btn-danger">Delete</a>
+            </div>
+          </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+{% endblock %}

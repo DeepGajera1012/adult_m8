@@ -53,8 +53,14 @@ def verify_user_profile():
     id_proof_filename = secure_filename(id_proof.filename)
     user_id = get_jwt_identity()
     cur = g.db.cursor()
-    cur.execute(f"insert into tbl_profile_verify (user_id,photo,id_proof) values ({user_id},'{user_photo_filename}','{id_proof_filename}')")
-    g.db.commit()
+    try:
+        cur.execute(f"insert into tbl_profile_verify (user_id,photo,id_proof) values ({user_id},'{user_photo_filename}','{id_proof_filename}')")
+        g.db.commit()
+    except:
+        return jsonify({"error":"user has already requested to verifiction"}),400
+    user_photo.save(f'project/media/{user_photo_filename}')
+    id_proof.save(f'project/media/{id_proof_filename}')
+
     return jsonify({"message":"request send successfully"}),200
 
 @client_bp.post("/like_feed/<feed_id>")

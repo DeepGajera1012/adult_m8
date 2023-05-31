@@ -33,7 +33,10 @@ def send_email(users):
 @authentication_bp.post('/register')
 def register():
     try:
-        data=request.json
+        try:
+            data = request.json
+        except:
+            return jsonify({'error':'data not found'}),404
         role=data.get('role')
         first_name=data.get('first_name')
         last_name=data.get('last_name')
@@ -120,7 +123,10 @@ def login():
 @authentication_bp.post('/verify_otp/<user_id>')
 def verifyotp(user_id):
     try:
-        data=request.json
+        try:
+            data = request.json
+        except:
+            return jsonify({'error':'data not found'}),404
         otp=data.get('otp')
         if not otp:
             return jsonify({'error':'otp required'}),400
@@ -146,7 +152,10 @@ def verifyotp(user_id):
     
 @authentication_bp.post('/forget_password')
 def forget_password():        
-    data = request.json
+    try:
+        data = request.json
+    except:
+        return jsonify({'error':'data not found'}),404
     email = data.get('email') 
     if not email:
             return jsonify({'error':'email required'}),400     
@@ -202,24 +211,22 @@ def change_password(users_id):
 
 @authentication_bp.post('/add_user_data/<user_id>')
 def add_user_data(user_id):
-    data = request.json
-    dob_str = data.get('dob')
+    try:
+        data = request.json
+    except:
+        return jsonify({'error':'data not found'}),404
     password = data.get('password')
     interests = data.get('interests')
-
-    try:
-        dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
-    except ValueError:
-        return jsonify({'error': 'Invalid date format'}), 400
 
     cursor = g.db.cursor(buffered=True)
     cursor.execute(f"SELECT * FROM `tbl_users` WHERE id = {user_id}")
     user = cursor.fetchone()
 
     if user:
-        cursor = g.db.cursor(buffered=True)
+        if user[11]!='':
+            return jsonify({'error':'data already updated'})
         pwd_hash = generate_password_hash(password, method='sha256', salt_length=8)
-        cursor.execute(f"UPDATE tbl_users SET dob = '{dob}', password = '{pwd_hash}' WHERE id = {user_id};")
+        cursor.execute(f"UPDATE tbl_users SET  password = '{pwd_hash}' WHERE id = {user_id};")
 
         if interests:
             for interest in interests:
@@ -229,14 +236,17 @@ def add_user_data(user_id):
 
         return jsonify({'successful': 'User data added successfully'})
 
-    return jsonify({'error': 'Wrong credentials'}), 401
+    return jsonify({'error': 'invalide user id'}), 401
 
 #--------------------------------------------escort_personal_info----------------------------------------
 
 
 @authentication_bp.post('/escort_personal_info/<user_id>')
 def escort_personal_info(user_id):
-    data = request.json
+    try:
+        data = request.json
+    except:
+        return jsonify({'error':'data not found'}),404
     gender = data.get('gender')
     bio = data.get('bio')
 
@@ -285,12 +295,14 @@ def upload_document(user_id):
             filename = secure_filename(passport_image.filename)
             passport_image.save(f"media/{filename}")
         if passport_front_image:
-            filename = secure_filename(passport_front_image.filename)
-            passport_front_image.save(f"media/{filename}")
+            filename1 = secure_filename(passport_front_image.filename)
+            passport_front_image.save(f"media/{filename1}")
 
-        cursor.execute(f"UPDATE tbl_escort_info SET passport_image = '{passport_image.filename}', passport_front_image = '{passport_front_image.filename}' WHERE id = {user_id}")
+        cursor.execute(f"UPDATE tbl_escort_info SET passport_image = '{filename}', passport_front_image = '{filename1}' WHERE escort_id = {user_id}")
         g.db.commit()
-        return jsonify({'successful': 'User data added successfully'})
+        if cursor.rowcount==0:
+            return jsonify({'error': 'user already uploeded'}),400
+        return jsonify({'successful': 'User data added successfully'}),200
     return jsonify({'error': 'Only escorts can upload'}), 401
 
 #--------------------------------------------set_body_preferences----------------------------------------
@@ -298,7 +310,10 @@ def upload_document(user_id):
 
 @authentication_bp.post('/set_body_preferences/<user_id>')
 def set_body_preferences(user_id):
-    data = request.json
+    try:
+        data = request.json
+    except:
+        return jsonify({'error':'data not found'}),404
     hair = data.get('hair')
     build = data.get('build')
     look=data.get('look')
@@ -343,7 +358,10 @@ def set_body_preferences(user_id):
 
 @authentication_bp.post('/set_bank_info/<user_id>')
 def set_bank_info(user_id):
-    data = request.json
+    try:
+        data = request.json
+    except:
+        return jsonify({'error':'data not found'}),404
     account_holder_name = data.get('account_holder_name')
     account_number = data.get('account_number')
     routing_number=data.get('routing_number')
@@ -364,9 +382,16 @@ def set_bank_info(user_id):
     if user:
         user_type = user[1]  
         
+        
         if user_type == 'escort':
             cursor.execute(f"SELECT * FROM tbl_escort_info WHERE escort_id = {user_id}")
             existing_info = cursor.fetchone()
+            if user[10]!='':
+                return jsonify({"error":"account already exit"}),404
+            if user[11]!='':
+                return jsonify({"error":"account already exit"}),404
+            if user[12]!='':
+                return jsonify({"error":"account already exit"}),404
 
             if existing_info:
                 cursor.execute(f"UPDATE tbl_escort_info SET account_holder_name='{account_holder_name}', account_number='{account_number}', routing_number='{routing_number}' WHERE escort_id={user_id}")
@@ -414,7 +439,10 @@ def upload_video(user_id):
 
     if escort:
         video = request.files.get('video')
-        data=request.form
+        try:
+            data = request.form
+        except:
+            return jsonify({'error':'data not found'}),404
         title=data.get('title')
         price=data.get('price')
         descripation=data.get('descripation')
@@ -440,8 +468,10 @@ def update_profile(user_id):
 
     if not user:
         return jsonify({'error': 'User not found'}), 404
-
-    data = request.form
+    try:
+        data = request.form
+    except:
+        return jsonify({'error':'data not found'}),404
     profile_image = request.files.get('profile_image')
     first_name = data.get('first_name')
     last_name = data.get('last_name')
@@ -474,4 +504,30 @@ def update_profile(user_id):
     cursor.execute(f"UPDATE tbl_users SET profile_image='{profile_image_filename}', first_name='{first_name}', last_name='{last_name}', username='{username}', phone='{phone}', email='{email}' WHERE id={user_id}")
     g.db.commit()
 
-    return jsonify({'error': ''}), 200
+    return jsonify({'error': 'updated successfully'}), 200
+
+@authentication_bp.post('/add_dob/<users_id>')
+def add_dob(users_id):
+    try:
+        data = request.json
+    except:
+        return jsonify({'error':'data not found'}),404
+    dob_str = data.get('dob') 
+    if not dob_str:
+        return jsonify({'error':'please input dob'}),404
+    try:
+        dob = datetime.strptime(dob_str, '%Y-%m-%d').date()
+    except ValueError:
+        return jsonify({'error': 'Invalid date format'}), 400
+    cursor = g.db.cursor(buffered=True)
+    cursor.execute(f"SELECT * FROM `tbl_users` WHERE id = {users_id}")
+    user = cursor.fetchone()
+    if user:
+        if user[10]!='0000-00-00':
+            return jsonify({"error":"dob already exit"}),404
+        cursor = g.db.cursor(buffered=True)
+        cursor.execute(f"UPDATE tbl_users SET dob = '{dob}' WHERE id = {users_id};")
+        g.db.commit()
+        return jsonify({'successful': 'DOB added successfully'})
+    
+    return jsonify({'error': 'Wrong credential'}), 401 

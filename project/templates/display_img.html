@@ -1,0 +1,24 @@
+{% extends 'index.html'%}
+
+{% block body %}
+
+<div class="row">
+    {% for i in data %}
+
+    <div class="col-md-3 col-sm-3 col-12 mt-3">
+        <div class="card" style="width: 100%;">
+            <a href="/post_details/{{i.id}}">
+              <img class="card-img-top" src="http://127.0.0.1:8000/display_media/{{i.image}}" alt="{{i.image}}">
+            </a>
+            <div class="card-body">
+              <h5 class="card-title">{{i.username}}</h5>
+
+              <a href="/delete_video/{{i.id}}" class="btn btn-danger">Delete</a>
+            </div>
+          </div>
+    </div>
+    {% endfor %}
+</div>
+
+
+{% endblock %}

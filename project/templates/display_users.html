@@ -1,0 +1,39 @@
+{% extends 'index.html'%}
+
+{% block body %}
+<table class="table">
+    <thead>
+        <tr>
+            <th>Sr no.</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Moblie no.</th>
+            <th>Date of Birth</th>
+            <th>Address</th>
+        </tr>
+    </thead>
+
+    <tbody>
+        {% for i in data %}
+        <tr>
+            <td>{{i[0]}}</td>
+            <td>{{i[1]}}</td>
+            <td>{{i[2]}}</td>
+            <td>{{i[3]}}</td>
+            <td>{{i[4]}}</td>
+            <td>{{i[5]}}</td>
+            <td>{{i[6]}}</td>
+            <td>{{i[7]}}</td>
+
+
+            <th><button class="btn"> <a href="/edit_record/{{i[0]}}">Edit</a></button>/ <button class="btn"> <a
+                        href="/delete_record/{{i[0]}}">Delete</a> </button></th>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+{% endblock %}
