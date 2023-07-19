@@ -18,8 +18,8 @@ app=Flask(__name__, template_folder='templates')
 
 app.config['MAIL_SERVER']='smtp.gmail.com'
 app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'botraj8253019502@gmail.com'
-app.config['MAIL_PASSWORD'] = 'sfhbqtregmvkvgvc'
+app.config['MAIL_USERNAME'] = '2@gmail.com'
+app.config['MAIL_PASSWORD'] = 'sftregmvkvgvc'
 app.config['MAIL_USE_TLS'] = False
 app.config['MAIL_USE_SSL'] = True
 mail = Mail(app)
